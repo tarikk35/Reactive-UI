@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, Icon, Image, Button } from 'semantic-ui-react'
+import { Card, Image, Button } from 'semantic-ui-react'
 import { IActivity } from '../../../models/activity'
 
 interface IProps {
@@ -9,7 +9,6 @@ interface IProps {
 }
 
 export const ActivityDetails: React.FC<IProps> = ({ activity, setEditMode, setSelectedActivity }) => {
-    console.log(activity.category);
     return (
         <Card fluid>
             <Image src={`/assets/${activity.category}.jpg`} wrapped ui={false}></Image>

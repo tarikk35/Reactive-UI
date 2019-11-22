@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import axios from 'axios';
-import { Header, Icon, List, Container } from 'semantic-ui-react';
+import { Container } from 'semantic-ui-react';
 import { IActivity } from '../../models/activity';
 import NavBar from '../../features/nav/navbar';
 import { StyleSheet } from '../../models/StyleSheet';
@@ -15,6 +15,7 @@ const App = () => {
 
   const handleSelectActivity = (id: string) => {
     setSelectedActivity(activities.filter(a => a.id === id)[0])
+    setEditMode(false)
   }
 
   const handleOpenCreateForm = () => {
@@ -22,9 +23,18 @@ const App = () => {
     setEditMode(true);
   }
 
+  const handleDeleteActivity = (id: string) => {
+    setActivities([...activities.filter(a => a.id !== id)])
+  }
+
   useEffect(() => { // useEffect combines componentDidMount, componentDidUpdate and componentWillUnmount 
     axios.get<IActivity[]>('http://localhost:5000/api/Activities').then((response) => {
-      setActivities(response.data);
+      let activities: IActivity[] = []
+      response.data.forEach(activity => {
+        activity.date = activity.date.split('.')[0];
+        activities.push(activity);
+      })
+      setActivities(activities);
     });
   }, []); // adding second parameter as an empty array, we prevent the infinite loop of fetching when the UI renders again (componentDidMount).
 
@@ -38,6 +48,7 @@ const App = () => {
           selectActivity={handleSelectActivity}
           setSelectedActivity={setSelectedActivity}
           selectedActivity={selectedActivity}
+          deleteActivity={handleDeleteActivity}
           editMode={editMode}
           setEditMode={setEditMode}></ActivityDashboard>
       </Container>
