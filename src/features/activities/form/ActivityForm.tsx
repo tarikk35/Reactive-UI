@@ -1,13 +1,19 @@
 import React, { useState, FormEvent } from 'react'
 import { Segment, Form, Button } from 'semantic-ui-react'
 import { IActivity } from '../../../models/activity'
+import { v4 as uuid } from 'uuid'
 
 interface IProps {
     setEditMode: (editMode: boolean) => void;
     activity: IActivity | null;
+    createActivity: (activity: IActivity) => void;
+    editActivity: (activity: IActivity) => void;
+    submitting: boolean;
 }
 
-export const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialFormState }) => {
+// De-Structuring props
+export const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialFormState, createActivity, editActivity,
+    submitting }) => {
 
     const initForm = () => {
         if (initialFormState) {
@@ -29,7 +35,16 @@ export const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialF
     const [activity, setActivity] = useState<IActivity>(initForm);
 
     const handleSubmit = () => {
-        console.log(activity);
+        if (activity.id.length === 0) {
+            let newActivity = {
+                ...activity,
+                id: uuid()
+            }
+            createActivity(newActivity)
+        }
+        else {
+            editActivity(activity)
+        }
     }
 
     const handleInputChange = (event: FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -46,7 +61,7 @@ export const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialF
                 <Form.Input type='datetime-local' placeholder='Date' name='date' onChange={handleInputChange} value={activity.date}></Form.Input>
                 <Form.Input placeholder='City' name='city' onChange={handleInputChange} value={activity.city}></Form.Input>
                 <Form.Input placeholder='Venue' name='venue' onChange={handleInputChange} value={activity.venue}></Form.Input>
-                <Button floated='right' positive type='submit' content='Submit'></Button>
+                <Button loading={submitting} floated='right' positive type='submit' content='Submit'></Button>
                 <Button onClick={() => setEditMode(false)} floated='right' negative type='button' content='Cancel'></Button>
             </Form>
         </Segment>
