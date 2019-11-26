@@ -1,27 +1,29 @@
-import React, { useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import { Grid } from "semantic-ui-react";
 import ActivityList from "./ActivityList";
-import ActivityDetails from "../details/ActivityDetails";
-import ActivityForm from "../form/ActivityForm";
 import { observer } from "mobx-react-lite";
+import { LoadingComponent } from "../../../app/layout/LoadingComponent";
 import ActivityStore from "../../../app/stores/activityStore";
 
 const ActivityDashboard: React.FC = () => {
   const activityStore = useContext(ActivityStore);
-  const { editMode, selectedActivity } = activityStore;
-  // if selectedActivity is not null, ActivityDetails will show up.
+
+  useEffect(() => {
+    activityStore.loadActivities();
+  }, [activityStore]); // adding second parameter as an empty array, we prevent the infinite loop of fetching when the UI renders again (componentDidMount).
+
+  if (activityStore.loadingInitial)
+    return (
+      <LoadingComponent content="Loading Activities near you..."></LoadingComponent>
+    );
+
   return (
     <Grid>
       <Grid.Column width={10}>
         <ActivityList></ActivityList>
       </Grid.Column>
       <Grid.Column width={6}>
-        {selectedActivity && !editMode && <ActivityDetails></ActivityDetails>}
-        {editMode && (
-          <ActivityForm
-            key={(selectedActivity && selectedActivity!.id) || 0}
-          ></ActivityForm>
-        )}
+        <h2>Activity filters</h2>
       </Grid.Column>
     </Grid>
   );

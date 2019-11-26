@@ -8,9 +8,7 @@ configure({ enforceActions: "always" });
 // Experimental Feature - decorator (@)
 class ActivityStore {
   @observable activityRegistry = new Map();
-  @observable activities: IActivity[] = [];
-  @observable selectedActivity: IActivity | undefined;
-  @observable editMode = false;
+  @observable activity: IActivity | null = null;
   @observable loadingInitial = false;
   @observable submitting = false;
   @observable target = "";
@@ -42,14 +40,42 @@ class ActivityStore {
     }
   };
 
+  @action loadActivity = async (id: string) => {
+    let activity = this.getActivity(id);
+    if (activity) {
+      this.activity = activity;
+    } else {
+      this.loadingInitial = true;
+      try {
+        activity = await agent.Activities.details(id);
+        runInAction("getting activity", () => {
+          this.activity = activity;
+          this.loadingInitial = false;
+        });
+      } catch (err) {
+        runInAction("error getting activity", () => {
+          this.loadingInitial = false;
+        });
+        console.log(err);
+      }
+    }
+  };
+
+  @action clearActivity = () => {
+    this.activity = null;
+  };
+
+  getActivity = (id: string) => {
+    return this.activityRegistry.get(id);
+  };
+
   @action editActivity = async (activity: IActivity) => {
     this.submitting = true;
     try {
       await agent.Activities.update(activity);
       runInAction("editing activity", () => {
         this.activityRegistry.set(activity.id, activity);
-        this.selectedActivity = activity;
-        this.editMode = false;
+        this.activity = activity;
         this.submitting = false;
       });
     } catch (err) {
@@ -65,13 +91,10 @@ class ActivityStore {
   };
 
   @action createActivity = async (activity: IActivity) => {
-    this.setSubmitting(true);
-
     try {
       await agent.Activities.create(activity);
       runInAction("creating activity", () => {
         this.activityRegistry.set(activity.id, activity);
-        this.editMode = false;
         this.submitting = false;
       });
     } catch (err) {
@@ -80,34 +103,6 @@ class ActivityStore {
         this.submitting = false;
       });
     }
-  };
-
-  @action openEditForm = (id: string) => {
-    this.selectedActivity = this.activityRegistry.get(id);
-    this.editMode = true;
-  };
-
-  @action cancelSelectedActivity = () => {
-    this.selectedActivity = undefined;
-  };
-
-  @action cancelFormOpen = () => {
-    this.editMode = false;
-  };
-
-  @action openCreateForm = () => {
-    this.editMode = true;
-    console.log("create");
-    this.selectedActivity = undefined;
-  };
-
-  @action setSubmitting = (isSubmitting: boolean) => {
-    this.submitting = isSubmitting;
-  };
-
-  @action selectActivity = (id: string) => {
-    this.selectedActivity = this.activityRegistry.get(id);
-    this.setEditMode(false);
   };
 
   @action deleteActivity = async (
@@ -130,10 +125,6 @@ class ActivityStore {
         this.submitting = false;
       });
     }
-  };
-
-  @action setEditMode = (isEdit: boolean) => {
-    this.editMode = isEdit;
   };
 }
 
