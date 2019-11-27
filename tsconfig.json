@@ -18,9 +18,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
   },
   "include": [
-    "src"
+    "src",
+    "./typings-custom/**/*.ts"
   ]
 }
