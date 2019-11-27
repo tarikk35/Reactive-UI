@@ -1,6 +1,5 @@
 import React from "react";
 import { Container, Segment, Header, Button, Image } from "semantic-ui-react";
-import { StyleSheet } from "../../app/models/StyleSheet";
 import { observer } from "mobx-react-lite";
 import { Link } from "react-router-dom";
 
@@ -17,7 +16,7 @@ const HomePage = () => {
           />
           Reactivities
         </Header>
-        <Header as="h2" inverted content="Welcome to Reactivities" />
+        <Header as="h2" inverted content="Welcome to Reactive" />
         <Button as={Link} to="/activities" size="huge" inverted>
           Take me to the activities!
         </Button>
@@ -26,10 +25,10 @@ const HomePage = () => {
   );
 };
 
-const styles: StyleSheet = {
-  container: {
-    marginTop: "7em"
-  }
-};
+// const styles: StyleSheet = {
+//   container: {
+//     marginTop: "7em"
+//   }
+// };
 
 export default observer(HomePage);

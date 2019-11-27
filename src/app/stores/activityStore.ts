@@ -49,7 +49,6 @@ class ActivityStore {
       });
     } catch (err) {
       runInAction("loading activities error occured", () => {
-        console.error(err);
         this.loadingInitial = false;
       });
     }
