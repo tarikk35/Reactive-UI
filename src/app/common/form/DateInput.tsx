@@ -22,6 +22,8 @@ const DateInput: React.FC<IProps> = ({
         time={time}
         value={input.value || null}
         onChange={input.onChange}
+        onBlur={input.onBlur}
+        onKeyDown={e => e.preventDefault()}
         {...rest}
       ></DateTimePicker>
       {touched && error && (

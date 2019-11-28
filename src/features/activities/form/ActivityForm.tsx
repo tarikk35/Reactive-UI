@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Segment, Form, Button, Grid } from "semantic-ui-react";
+import { v4 as uuid } from "uuid";
 import {
-  IActivityFormValues,
   ActivityFormValues
 } from "../../../app/models/activity";
 import ActivityStore from "../../../app/stores/activityStore";
@@ -14,6 +14,30 @@ import SelectInput from "../../../app/common/form/SelectInput";
 import { category } from "../../../app/common/options/categoryOptions";
 import DateInput from "../../../app/common/form/DateInput";
 import { combineDateAndTime } from "../../../app/common/util/util";
+import {
+  combineValidators,
+  isRequired,
+  composeValidators,
+  hasLengthBetween,
+} from "revalidate";
+
+const validate = combineValidators({
+  title: isRequired({ message: "The event title is required" }),
+  category: isRequired("Category"),
+  description: composeValidators(
+    isRequired({ message: "Description is required" }),
+    hasLengthBetween(
+      4,
+      200
+    )({
+      message: "Length should be between 4 and 200 characters"
+    })
+  )(),
+  city: isRequired("City"),
+  venue: isRequired("Venue"),
+  date: isRequired("Date"),
+  time: isRequired("Time")
+});
 
 interface IDetailParams {
   id: string;
@@ -30,7 +54,8 @@ const ActivityForm: React.FC<RouteComponentProps<IDetailParams>> = ({
     // createActivity,
     submitting,
     loadActivity,
-    activity: initialFormState
+    createActivity,
+    editActivity
   } = activityStore;
 
   const [activity, setActivity] = useState(new ActivityFormValues());
@@ -52,33 +77,26 @@ const ActivityForm: React.FC<RouteComponentProps<IDetailParams>> = ({
     const dateAndTime = combineDateAndTime(values.date, values.time);
     const { date, time, ...activity } = values;
     activity.date = dateAndTime;
-    console.log(activity);
+    if (!activity.id) {
+      let newActivity = {
+        ...activity,
+        id: uuid()
+      };
+      createActivity(newActivity);
+    } else {
+      editActivity(activity);
+    }
   };
-
-  // const handleSubmit = () => {
-  //   if (activity.id.length === 0) {
-  //     let newActivity = {
-  //       ...activity,
-  //       id: uuid()
-  //     };
-  //     createActivity(newActivity).then(() =>
-  //       history.push(`/activities/${newActivity.id}`)
-  //     );
-  //   } else {
-  //     editActivity(activity).then(() =>
-  //       history.push(`/activities/${activity.id}`)
-  //     );
-  //   }
-  // };
 
   return (
     <Grid>
       <Grid.Column width={10}>
         <Segment clearing>
           <FinalForm
+            validate={validate}
             initialValues={activity}
             onSubmit={handleFinalFormSubmit}
-            render={({ handleSubmit }) => (
+            render={({ handleSubmit, invalid, pristine }) => (
               <Form onSubmit={handleSubmit} loading={loading}>
                 <Field
                   placeholder="Title"
@@ -130,16 +148,20 @@ const ActivityForm: React.FC<RouteComponentProps<IDetailParams>> = ({
                 ></Field>
                 <Button
                   loading={submitting}
-                  disabled={loading}
+                  disabled={loading || invalid || pristine}
                   floated="right"
                   positive
                   type="submit"
                   content="Submit"
                 ></Button>
                 <Button
-                  onClick={() => history.push("/activities")}
+                  onClick={
+                    activity.id
+                      ? () => history.push(`/activities/${activity.id}`)
+                      : () => history.push("/activities")
+                  }
                   floated="right"
-                  disabled={loading}
+                  disabled={loading || invalid || pristine}
                   negative
                   type="button"
                   content="Cancel"
