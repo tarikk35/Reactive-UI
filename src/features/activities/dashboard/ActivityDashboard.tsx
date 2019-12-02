@@ -3,16 +3,17 @@ import { Grid } from "semantic-ui-react";
 import ActivityList from "./ActivityList";
 import { observer } from "mobx-react-lite";
 import { LoadingComponent } from "../../../app/layout/LoadingComponent";
-import ActivityStore from "../../../app/stores/activityStore";
+import { RootStoreContext } from "../../../app/stores/rootStore";
 
 const ActivityDashboard: React.FC = () => {
-  const activityStore = useContext(ActivityStore);
+  const rootStore = useContext(RootStoreContext);
+  const { loadActivities, loadingInitial } = rootStore.activityStore;
 
   useEffect(() => {
-    activityStore.loadActivities();
-  }, [activityStore]); // adding second parameter as an empty array, we prevent the infinite loop of fetching when the UI renders again (componentDidMount).
+    loadActivities();
+  }, [loadActivities]); // adding second parameter as an empty array, we prevent the infinite loop of fetching when the UI renders again (componentDidMount).
 
-  if (activityStore.loadingInitial)
+  if (loadingInitial)
     return (
       <LoadingComponent content="Loading Activities near you..."></LoadingComponent>
     );

@@ -1,10 +1,14 @@
-import React from "react";
-import { Menu, Container, Button } from "semantic-ui-react";
+import React, { useContext } from "react";
+import { Menu, Container, Button, Image, Dropdown } from "semantic-ui-react";
 import { StyleSheet } from "../../app/models/StyleSheet";
 import { observer } from "mobx-react-lite";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
+import { RootStoreContext } from "../../app/stores/rootStore";
 
 const NavBar: React.FC = () => {
+  const rootStore = useContext(RootStoreContext);
+  const { user, logout } = rootStore.userStore;
+
   return (
     // fixed removes paddings and margins
     // positive button means green button
@@ -23,6 +27,22 @@ const NavBar: React.FC = () => {
             to="/createActivity"
           ></Button>
         </Menu.Item>
+        {user && (
+          <Menu.Item position="right">
+            <Image avatar spaced="right" src={"/assets/user.png"}></Image>
+            <Dropdown pointing="top left" text={user.displayName}>
+              <Dropdown.Menu>
+                <Dropdown.Item
+                  as={Link}
+                  to={`/profile/${user.username}`}
+                  text="My profile"
+                  icon="user"
+                ></Dropdown.Item>
+                <Dropdown.Item onClick={logout} text="Log out" icon="power"></Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Menu.Item>
+        )}
       </Container>
     </Menu>
   );

@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useContext, useEffect } from "react";
 import { Container } from "semantic-ui-react";
 import NavBar from "../../features/nav/navbar";
 import { StyleSheet } from "../models/StyleSheet";
@@ -15,16 +15,37 @@ import ActivityForm from "../../features/activities/form/ActivityForm";
 import ActivityDetails from "../../features/activities/details/ActivityDetails";
 import NotFound from "./NotFound";
 import { ToastContainer } from "react-toastify";
+import LoginForm from "../../features/user/LoginForm";
+import { RootStoreContext } from "../stores/rootStore";
+import { LoadingComponent } from "./LoadingComponent";
+import ModalContainer from "../common/modals/ModelContainer";
 
 // Hooks needs useState and useEffect. Hooks reduce the boilerplate codes and makes it simpler.
 
 // TODO: if Deleted activity is currently editing/detailed, remove it from active activity
 const App: React.FC<RouteComponentProps> = ({ location }) => {
+  const rootStore = useContext(RootStoreContext);
+  const { setAppLoaded, token, appLoaded } = rootStore.commonStore;
+  const { getUser } = rootStore.userStore;
+
+  useEffect(() => {
+    if (token) {
+      getUser().finally(() => setAppLoaded());
+    } else {
+      setAppLoaded();
+    }
+  }, [getUser, setAppLoaded, token]);
+
+  if (!appLoaded) {
+    return <LoadingComponent content="Loading the page ..."></LoadingComponent>;
+  }
+
   return (
     // Fragment is useful when we want to return multiple elements but we dont need to style the surrounding div
     // To override type-safety of TypeScript, add '!' after the variable
     <Fragment>
-      <ToastContainer position="bottom-right" ></ToastContainer>
+      <ModalContainer></ModalContainer>
+      <ToastContainer position="bottom-right"></ToastContainer>
       <Route exact path="/" component={HomePage}></Route>
       <Route
         path={"/(.+)"}
@@ -49,6 +70,7 @@ const App: React.FC<RouteComponentProps> = ({ location }) => {
                   path={["/createActivity", "/manage/:id"]}
                   component={ActivityForm}
                 ></Route>
+                <Route path="/login" component={LoginForm}></Route>
                 <Route component={NotFound}></Route>
               </Switch>
             </Container>
