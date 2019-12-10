@@ -24,7 +24,7 @@ export default class ActivityStore {
   @observable loading = false;
   @observable.ref hubConnection: HubConnection | null = null;
 
-  @action createHubConnection = () => {
+  @action createHubConnection = (activityId: string) => {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl("http://localhost:5000/chat", {
         accessTokenFactory: () => this.rootStore.commonStore.token!
@@ -37,6 +37,10 @@ export default class ActivityStore {
       .then(() => {
         console.log(this.hubConnection!.state);
       })
+      .then(() => {
+        console.log("Attempting to join group");
+        this.hubConnection!.invoke("AddToGroup", activityId);
+      })
       .catch(error => console.log("Error establishing collection", error));
 
     this.hubConnection.on("ReceiveComment", comment => {
@@ -44,10 +48,19 @@ export default class ActivityStore {
         this.activity!.comments.push(comment);
       });
     });
+
+    this.hubConnection.on("Send", message => {
+      toast.info(message);
+    });
   };
 
   @action stopHubConnection = () => {
-    this.hubConnection!.stop();
+    this.hubConnection!.invoke("RemoveFromGroup", this.activity!.id)
+      .then(() => {
+        this.hubConnection!.stop();
+      })
+      .then(() => console.log("connection stopped"))
+      .catch(error => console.log(error));
   };
 
   @action addComment = async (values: any) => {
