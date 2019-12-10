@@ -9,6 +9,16 @@ export interface IActivity {
   isGoing: boolean;
   isHost: boolean;
   attendees: IAttendee[];
+  comments: IComment[];
+}
+
+export interface IComment {
+  id: string;
+  createdAt: Date;
+  body: string;
+  username: string;
+  displayName: string;
+  userImage: string;
 }
 
 // Partial makes props optional
